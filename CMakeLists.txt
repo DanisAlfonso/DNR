@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(MyProject)
+project(myproject)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_FLAGS "-O3")
@@ -26,11 +26,15 @@ if(APPLE)
     target_link_libraries(lu_example "-framework Accelerate")
 endif()
 
+# Set the policy CMP0148 to avoid warnings about deprecated modules
+cmake_policy(SET CMP0148 NEW)
+
 # Conditionally add pybind11 and the Python module
 if(BUILD_PYTHON_BINDINGS)
-    # Use the new FindPython3 module
+    # Use the modern FindPython module
     find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
-    find_package(pybind11 REQUIRED)
+    execute_process(COMMAND python3 -m pybind11 --cmakedir OUTPUT_VARIABLE PYBIND11_CMAKE_DIR OUTPUT_STRIP_TRAILING_WHITESPACE)
+    find_package(pybind11 REQUIRED PATHS ${PYBIND11_CMAKE_DIR})
 
     include_directories(${Python3_INCLUDE_DIRS})
     pybind11_add_module(DNR src/bindings.cpp)
